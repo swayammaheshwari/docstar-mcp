@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Resolve the absolute path of the script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$DIR/.."
+ENV_FILE="$PROJECT_ROOT/.env"
+
+# Check if .env file exists
+if [ -f "$ENV_FILE" ]; then
+    export $(grep -v '^#' "$ENV_FILE" | xargs)
+else
+    echo "Warning: .env file not found at $ENV_FILE" >&2
+fi
+
+# Run the MCP server
+# Use exec to replace the shell process with the node process
+# Pass any arguments provided to the script along to the node process
+NODE_PATH="/Users/walkover/.nvm/versions/node/v24.12.0/bin/node"
+
+if [ -f "$NODE_PATH" ]; then
+  exec "$NODE_PATH" "$PROJECT_ROOT/build/index.js" "$@"
+else
+  # Fallback to trying to find node in PATH if the specific version is gone
+  exec node "$PROJECT_ROOT/build/index.js" "$@"
+fi
