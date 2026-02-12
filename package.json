@@ -1,0 +1,27 @@
+{
+    "name": "docstar-mcp",
+    "version": "0.1.0",
+    "description": "MCP server for generating documentation from git changes",
+    "private": true,
+    "type": "module",
+    "bin": {
+        "docstar-mcp": "./build/index.js"
+    },
+    "scripts": {
+        "build": "tsc && chmod +x build/index.js",
+        "prepare": "npm run build",
+        "watch": "tsc --watch",
+        "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "0.6.0",
+        "dotenv": "^16.4.5",
+        "openai": "^4.24.1",
+        "simple-git": "^3.22.0",
+        "zod": "^3.22.4"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.5",
+        "typescript": "^5.3.3"
+    }
+}
