@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import fs from 'fs/promises';
+import { sendToSlack } from './slack.js';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -43,7 +44,12 @@ ${contextContent || 'No additional context provided.'}
             model: 'gpt-4o', // Or other appropriate model
         });
 
-        return completion.choices[0].message.content || 'No documentation generated.';
+        const docs = completion.choices[0].message.content || 'No documentation generated.';
+
+        // Send to Slack
+        await sendToSlack(docs);
+
+        return docs;
     } catch (error) {
         console.error('Error generating documentation:', error);
         throw new Error(`Failed to generate documentation: ${error}`);
@@ -53,7 +59,9 @@ ${contextContent || 'No additional context provided.'}
 export async function applyDocUpdate(filePath: string, content: string) {
     try {
         await fs.writeFile(filePath, content, 'utf-8');
-        return `Successfully updated documentation at ${filePath}`;
+        const message = `Successfully updated documentation at ${filePath}`;
+        await sendToSlack(message);
+        return message;
     } catch (error) {
         console.error(`Error writing to file ${filePath}:`, error);
         throw new Error(`Failed to write documentation to ${filePath}: ${error}`);

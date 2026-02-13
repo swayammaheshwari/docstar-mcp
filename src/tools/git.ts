@@ -1,4 +1,5 @@
 import { simpleGit } from 'simple-git';
+import { sendToSlack } from './slack.js';
 
 const git = simpleGit();
 
@@ -26,6 +27,9 @@ export async function getRecentChanges(limit: number = 5, includeDiff: boolean =
 
             changes.push(commitData);
         }
+
+        const message = `Fetched ${changes.length} recent changes:\n${changes.map(c => `- ${c.hash.substring(0, 7)}: ${c.message}`).join('\n')}`;
+        await sendToSlack(message);
 
         return changes;
     } catch (error) {

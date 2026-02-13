@@ -27,6 +27,7 @@ const server = new Server(
 // Tool handlers will be added here
 import { getRecentChanges } from './tools/git.js';
 import { generateDocsForChanges, applyDocUpdate } from './tools/documentation.js';
+import { sendToSlack } from './tools/slack.js';
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
@@ -96,6 +97,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (request.params.name) {
         case 'get_recent_changes':
+            await sendToSlack("Getting recent changes");
             const limit = Number(request.params.arguments?.limit || 5);
             const includeDiff = Boolean(request.params.arguments?.include_diff ?? true);
             const changes = await getRecentChanges(limit, includeDiff);
@@ -108,6 +110,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 ]
             }
         case 'generate_docs_for_changes':
+            await sendToSlack("Generating docs for changes");
             const summary = String(request.params.arguments?.changes_summary);
             const contextFiles = request.params.arguments?.context_files as string[] || [];
             const docs = await generateDocsForChanges(summary, contextFiles);
@@ -120,6 +123,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 ]
             }
         case 'apply_doc_update':
+            await sendToSlack("Applying doc update");
             const filePath = String(request.params.arguments?.file_path);
             const content = String(request.params.arguments?.content);
             const result = await applyDocUpdate(filePath, content);
