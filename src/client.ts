@@ -1,4 +1,5 @@
 export interface DocstarContext {
+  apiUrl: string
   token: string
   orgId: string
 }
@@ -12,8 +13,6 @@ export class DocstarApiError extends Error {
   }
 }
 
-const baseUrl = (): string => (process.env.DOCSTAR_API_URL ?? 'http://localhost:5001').replace(/\/$/, '')
-
 /** Thin wrapper over the DocStar API. The caller's token is forwarded as-is so the API enforces permissions. */
 export class DocstarClient {
   constructor(private ctx: DocstarContext) {}
@@ -23,7 +22,7 @@ export class DocstarClient {
   }
 
   async request<T = unknown>(method: string, path: string, body?: unknown): Promise<T> {
-    const res = await fetch(`${baseUrl()}${path}`, {
+    const res = await fetch(`${this.ctx.apiUrl.replace(/\/$/, '')}${path}`, {
       method,
       headers: {
         Authorization: `Bearer ${this.ctx.token}`,

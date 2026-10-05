@@ -1,6 +1,11 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js'
+import {marked} from 'marked'
+import {NodeHtmlMarkdown} from 'node-html-markdown'
 import {z} from 'zod'
-import type {DocstarClient} from './client.js'
+import {DocstarApiError, type DocstarClient} from './client.js'
+
+const htmlToMarkdown = (html: string): string => NodeHtmlMarkdown.translate(html)
+const toHtml = (markdown: string): string => marked.parse(markdown, {async: false}) as string
 
 // Page state enum from hitman-api (utils/Enums/page.ts)
 const PAGE_STATE = {DRAFT: 1, APPROVED: 2} as const
@@ -64,12 +69,20 @@ export function registerTools(server: McpServer, api: DocstarClient): void {
 
   server.tool(
     'get_page',
-    'Get a page with its content.',
+    'Get a page with its content as Markdown.',
     {pageId: z.string()},
     safe(async ({pageId}) => {
       const {page} = await api.request<{page: Record<string, unknown>}>('GET', `${org}/pages/${pageId}`)
-      const content = await api.request<{contents: unknown}>('GET', `${org}/pages/${pageId}/content`)
-      return {...page, contents: content.contents}
+      let markdown: string | null = null
+      try {
+        const res = await api.request<{content: Record<string, {html: string}>}>('GET', `/api/page/${pageId}/content`)
+        const html = res.content?.[pageId]?.html
+        markdown = html ? htmlToMarkdown(html) : null
+      } catch (error) {
+        if (!(error instanceof DocstarApiError && error.status === 404)) throw error
+      }
+
+      return {id: page.id, name: page.name, state: page.state, isPublished: page.isPublished, parentId: page.parentId, markdown}
     }),
   )
 
@@ -91,10 +104,10 @@ export function registerTools(server: McpServer, api: DocstarClient): void {
     {
       collectionId: z.string(),
       name: z.string().min(1),
-      contents: z.string().optional().describe('Page content'),
+      markdown: z.string().optional().describe('Page content in Markdown'),
       parentPageId: z.string().optional().describe('Parent page id; defaults to the collection root'),
     },
-    safe(async ({collectionId, name, contents, parentPageId}) => {
+    safe(async ({collectionId, name, markdown, parentPageId}) => {
       let parent = parentPageId
       if (!parent) {
         const {pages} = await api.request<{pages: PageSummary[]}>('GET', `${org}/collection/${collectionId}/pages`)
@@ -102,21 +115,46 @@ export function registerTools(server: McpServer, api: DocstarClient): void {
         if (!parent) throw new Error('Could not find the collection root page; pass parentPageId.')
       }
 
-      return api.request('POST', `${org}/pages/${parent}`, {name, contents, state: PAGE_STATE.DRAFT})
+      return api.request('POST', `${org}/pages/${parent}`, {name, contents: markdown === undefined ? undefined : toHtml(markdown), state: PAGE_STATE.DRAFT})
     }),
   )
 
   server.tool(
     'update_page',
-    'Update a page name and/or content. The page goes back to draft until published again.',
+    'Update a page name and/or content (Markdown). The page goes back to draft until published again.',
     {
       pageId: z.string(),
       name: z.string().min(1).optional(),
-      contents: z.string().optional(),
+      markdown: z.string().optional().describe('New page content in Markdown (replaces existing content)'),
     },
-    safe(({pageId, name, contents}) => {
-      if (name === undefined && contents === undefined) throw new Error('Provide name and/or contents.')
-      return api.request('PUT', `${org}/pages/${pageId}`, {name, contents})
+    safe(async ({pageId, name, markdown}) => {
+      if (name === undefined && markdown === undefined) throw new Error('Provide name and/or markdown.')
+
+      // PUT /pages/:id crashes unless urlName is sent (sanitizeUrl(undefined)), so always resend the current one
+      const {page} = await api.request<{page: {name: string; urlName: string}}>('GET', `${org}/pages/${pageId}`)
+      const keep = {name: page.name, urlName: page.urlName}
+
+      const result: Record<string, unknown> = {}
+      if (markdown !== undefined) {
+        const html = toHtml(markdown)
+        try {
+          // Pages already opened in the editor keep their content in a Yjs doc
+          await api.request('POST', `${org}/pages/${pageId}/ydoc`, {html})
+          result.content = 'updated'
+        } catch (error) {
+          // The Yjs doc only exists once the page was opened in the editor; until then content lives in `contents`
+          if (!(error instanceof DocstarApiError && /not found in store/i.test(error.message))) throw error
+          await api.request('PUT', `${org}/pages/${pageId}`, {...keep, contents: html})
+          result.content = 'updated (not yet opened in editor)'
+        }
+      }
+
+      if (name !== undefined) {
+        await api.request('PUT', `${org}/pages/${pageId}`, {...keep, name})
+        result.name = name
+      }
+
+      return result
     }),
   )
 

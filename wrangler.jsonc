@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "docstar-mcp",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-08-31",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Default (no --env): local `wrangler dev`, talks to a local hitman-api.
+  "vars": { "DOCSTAR_API_URL": "http://localhost:2000" },
+
+  "env": {
+    "production": {
+      "name": "docstar-mcp",
+      "vars": { "DOCSTAR_API_URL": "https://api.docstar.io" },
+      "routes": [{ "pattern": "mcp.docstar.io", "custom_domain": true }]
+    }
+  }
+}
