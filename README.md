@@ -1,61 +1,24 @@
-# Docstar MCP
+# docstar-mcp
 
-Docstar MCP is a Model Context Protocol server designed to automate documentation updates based on git changes.
-
-## Features
-
-- **Get Recent Changes**: Fetches recent commits and diffs from your local git repository.
-- **Generate Documentation**: Uses an LLM (OpenAI) to analyze changes and generate documentation.
-- **Apply Updates**: Writes the generated documentation to files.
-
-## Installation
-
-1.  Navigate to the `docstar-mcp` directory:
-    ```bash
-    cd docstar-mcp
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Create a `.env` file and add your OpenAI API key:
-    ```env
-    OPENAI_API_KEY=your_api_key_here
-    ```
-4.  Build the project:
-    ```bash
-    npm run build
-    ```
-
-## Usage
-
-You can use this MCP server with any MCP-compliant client (e.g., Claude Desktop, specific IDE extensions).
-
-### Configuration
-
-Add the following to your MCP client configuration:
-
-```json
-{
-  "mcpServers": {
-    "docstar": {
-      "command": "node",
-      "args": ["/path/to/docstar-mcp/build/index.js"]
-    }
-  }
-}
-```
+Remote MCP server (Streamable HTTP) that lets AI clients work with a DocStar workspace. It is a thin layer over the DocStar API (hitman-api) and never touches the database; the caller's DocStar API token (`hm_...`) is forwarded so existing permissions apply.
 
 ## Tools
+`list_collections`, `list_pages`, `get_page`, `search_docs`, `create_page`, `update_page`, `publish_page`
 
-- `get_recent_changes`:
-    - `limit` (number): Number of commits to fetch (default: 5).
-    - `include_diff` (boolean): Whether to include diffs (default: true).
+## Run
+```bash
+cp .env.example .env   # set DOCSTAR_API_URL
+npm install
+npm run dev
+```
 
-- `generate_docs_for_changes`:
-    - `changes_summary` (string): The git diff or summary to analyze.
-    - `context_files` (array<string>): Paths to files for additional context.
+## Connect from Claude Code
+```bash
+claude mcp add --transport http docstar http://localhost:3100/mcp \
+  --header "Authorization: Bearer hm_xxx" \
+  --header "X-Docstar-Org-Id: <orgId>"
+```
 
-- `apply_doc_update`:
-    - `file_path` (string): Path to the file to update/create.
-    - `content` (string): The documentation content to write.
+## Roadmap
+1. OAuth 2.1 + scopes (needs authorize/token endpoints in hitman-api and a consent screen in hitman-ui)
+2. `create_collection`, resources (`docstar://page/{id}`), prompts, higher-level workflow tools
