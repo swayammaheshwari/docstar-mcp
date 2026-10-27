@@ -1,8 +1,6 @@
-import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js'
 import {StreamableHTTPServerTransport} from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import express from 'express'
-import {DocstarClient} from './client.js'
-import {registerTools} from './tools.js'
+import {createServer} from './server.js'
 
 const app = express()
 app.use(express.json({limit: '10mb'}))
@@ -27,8 +25,7 @@ app.post('/mcp', async (req, res) => {
     return
   }
 
-  const server = new McpServer({name: 'docstar-mcp', version: '0.1.0'})
-  registerTools(server, new DocstarClient({token, orgId}))
+  const server = createServer({token, orgId})
 
   const transport = new StreamableHTTPServerTransport({sessionIdGenerator: undefined})
   res.on('close', () => {

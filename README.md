@@ -13,21 +13,12 @@ Remote MCP server (Streamable HTTP) that lets AI clients work with a DocStar wor
 | `update_page` | Change name and/or content (Markdown); page goes back to draft |
 | `publish_page` | Publish a page (its parent must already be published) |
 
-## Environments
-| Env | API | How to run |
-|---|---|---|
-| local | `http://localhost:2000` | `npm run dev:worker` |
-| production | `https://api.docstar.io` | `npm run deploy` -> `https://mcp.docstar.io/mcp` |
-
-API URLs live in [wrangler.jsonc](wrangler.jsonc). See [DEPLOY.md](DEPLOY.md) for deployment.
-
 ## Run locally
 ```bash
 npm install
-npm run dev:worker          # Worker runtime on http://localhost:8787/mcp, uses the local hitman-api
-# or, plain Node (no Cloudflare runtime):
-cp .env.example .env && npm run dev   # http://localhost:3100/mcp
+DOCSTAR_API_URL=http://localhost:2000 npm run dev   # http://localhost:3100/mcp
 ```
+The local server also needs the organization: send an `X-Docstar-Org-Id` header or set `DOCSTAR_ORG_ID`.
 
 ## Connect from Claude Code
 Create an API token in DocStar, then:
@@ -35,7 +26,7 @@ Create an API token in DocStar, then:
 claude mcp add --transport http docstar-workspace https://mcp.docstar.io/mcp \
   --header "Authorization: Bearer hm_xxx"
 ```
-For local testing use `http://localhost:8787/mcp` instead.
+For local testing use `http://localhost:3100/mcp` instead.
 
 ## Connect from Cline
 Install it from the Cline MCP Marketplace, or open **MCP Servers → Configure MCP Servers** and add this to `cline_mcp_settings.json`:
