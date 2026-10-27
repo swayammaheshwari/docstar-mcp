@@ -37,6 +37,32 @@ claude mcp add --transport http docstar-workspace https://mcp.docstar.io/mcp \
 ```
 For local testing use `http://localhost:8787/mcp` instead.
 
+## Connect from Cline
+Install it from the Cline MCP Marketplace, or open **MCP Servers → Configure MCP Servers** and add this to `cline_mcp_settings.json`:
+```json
+{
+  "mcpServers": {
+    "docstar": {
+      "type": "streamableHttp",
+      "url": "https://mcp.docstar.io/mcp",
+      "headers": {
+        "Authorization": "Bearer hm_xxx"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+`type` must be `streamableHttp` (the server has no SSE endpoint). Agent-driven install steps are in [llms-install.md](llms-install.md).
+
+## MCP Registry
+The server is listed in the official MCP Registry as `io.github.swayammaheshwari/docstar-mcp`; [server.json](server.json) is the listing. To publish a change, bump `version` in `server.json`, then:
+```bash
+mcp-publisher login github     # as swayammaheshwari, who owns the io.github.swayammaheshwari namespace
+mcp-publisher publish
+```
+
 ## Roadmap
 1. OAuth 2.1 + scopes (needs authorize/token endpoints in hitman-api and a consent screen in hitman-ui)
 2. `create_collection`, resources (`docstar://page/{id}`), prompts, higher-level workflow tools

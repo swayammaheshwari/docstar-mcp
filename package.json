@@ -1,6 +1,7 @@
 {
   "name": "docstar-mcp",
   "version": "0.1.0",
+  "mcpName": "io.github.swayammaheshwari/docstar-mcp",
   "description": "Remote MCP server that lets AI clients (Claude, ChatGPT) read, search, create and publish DocStar docs via the DocStar API.",
   "type": "module",
   "main": "dist/index.js",
