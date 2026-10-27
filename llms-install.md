@@ -2,13 +2,10 @@
 
 These steps are for AI agents (such as Cline) setting up this server for a user.
 
-DocStar MCP is a remote server. There is nothing to clone, build or run locally: the client connects to `https://mcp.docstar.io/mcp` over Streamable HTTP.
+DocStar MCP is a remote server. There is nothing to clone, build or run locally: the client connects to `https://mcp.docstar.io/mcp` over Streamable HTTP. Authentication uses OAuth 2.0, so the user does not need an API token and must not be asked for one.
 
-## 1. Get a DocStar API token
-Ask the user for their DocStar API token. It starts with `hm_` and is created in DocStar. The token alone decides which organization is accessed, and the user's existing DocStar permissions apply. Do not invent or guess a token.
-
-## 2. Add the server to the MCP settings
-Add this entry to the `mcpServers` object in the MCP settings file (for Cline: `cline_mcp_settings.json`), replacing `hm_xxx` with the user's token:
+## 1. Add the server to the MCP settings
+Add this entry to the `mcpServers` object in the MCP settings file (for Cline: `cline_mcp_settings.json`):
 
 ```json
 {
@@ -16,9 +13,6 @@ Add this entry to the `mcpServers` object in the MCP settings file (for Cline: `
     "docstar": {
       "type": "streamableHttp",
       "url": "https://mcp.docstar.io/mcp",
-      "headers": {
-        "Authorization": "Bearer hm_xxx"
-      },
       "disabled": false,
       "autoApprove": []
     }
@@ -26,10 +20,13 @@ Add this entry to the `mcpServers` object in the MCP settings file (for Cline: `
 }
 ```
 
-Keep any servers already in the file. The `type` must be `streamableHttp`; this server does not offer the legacy SSE transport.
+Keep any servers already in the file. The `type` must be `streamableHttp`; this server does not offer the legacy SSE transport. Do not add an `Authorization` header.
+
+## 2. Sign in with OAuth
+The first time the client connects, it opens a browser window for the user to sign in to DocStar and approve access. Tell the user to complete the sign-in. The user's existing DocStar permissions apply to everything the server does.
 
 ## 3. Verify
-Call the `list_collections` tool. It should return the user's DocStar collections. A `401` error means the `Authorization` header is missing or the token is wrong.
+Call the `list_collections` tool. It should return the user's DocStar collections. If it fails with an authorization error, ask the user to sign in again (disconnect and reconnect the server in the client's MCP settings).
 
 ## Tools
 `list_collections`, `list_pages`, `get_page`, `search_docs`, `create_page`, `update_page`, `publish_page`
