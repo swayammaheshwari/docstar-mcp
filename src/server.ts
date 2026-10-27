@@ -10,6 +10,9 @@ export interface McpConfig {
 // so the token alone decides which org is accessed. A fixed placeholder fills the URL segment.
 export const ORG_PLACEHOLDER = 'current'
 
+// Same logo as the MCP Registry listing (server.json `icons`)
+export const DOCSTAR_ICON = 'https://stuff.thingsofbrand.com/docstar.io/images/imgd_docstar.png'
+
 export const jsonRpcError = (code: number, message: string) => ({jsonrpc: '2.0', error: {code, message}, id: null})
 
 /** Reads the caller's DocStar API token from the Authorization header; returns an error payload when missing. */
@@ -22,7 +25,13 @@ export function readToken(
 }
 
 export function createServer(config: McpConfig, token: string): McpServer {
-  const server = new McpServer({name: 'docstar-mcp', version: '0.1.0'})
+  const server = new McpServer({
+    name: 'docstar-mcp',
+    title: 'Docstar',
+    version: '0.1.0',
+    websiteUrl: 'https://docstar.io',
+    icons: [{src: DOCSTAR_ICON, mimeType: 'image/png'}],
+  })
   registerTools(server, new DocstarClient({apiUrl: config.apiUrl, token, orgId: ORG_PLACEHOLDER}))
   return server
 }

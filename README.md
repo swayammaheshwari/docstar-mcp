@@ -57,7 +57,7 @@ Install it from the Cline MCP Marketplace, or open **MCP Servers → Configure M
 `type` must be `streamableHttp` (the server has no SSE endpoint). Agent-driven install steps are in [llms-install.md](llms-install.md).
 
 ## MCP Registry
-The server is listed in the official MCP Registry as `io.github.swayammaheshwari/docstar-mcp`; [server.json](server.json) is the listing. To publish a change, bump `version` in `server.json`, then:
+The server is listed in the official MCP Registry as `io.github.swayammaheshwari/docstar-mcp`; [server.json](server.json) is the listing. The logo shown there comes from `icons` in `server.json` (an HTTPS URL; the server also reports it in its MCP `serverInfo`). To publish a change, bump `version` in `server.json`, then:
 ```bash
 mcp-publisher login github     # as swayammaheshwari, who owns the io.github.swayammaheshwari namespace
 mcp-publisher publish
