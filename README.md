@@ -1,4 +1,4 @@
-# docstar-mcp
+# DocStar
 
 Remote MCP server (Streamable HTTP) that lets AI clients work with a DocStar workspace. It runs as a Cloudflare Worker and is a thin layer over the DocStar API (hitman-api); it never touches the database. Users sign in with OAuth 2.0, so no API token is needed, and the user's existing DocStar permissions apply to everything the server does.
 
