@@ -3,8 +3,12 @@
   "name": "io.github.swayammaheshwari/docstar-mcp",
   "title": "Docstar",
   "description": "Publish your API docs so AI assistants can look up endpoints and call your API correctly.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "websiteUrl": "https://docstar.io",
+  "repository": {
+    "url": "https://github.com/swayammaheshwari/docstar-mcp",
+    "source": "github"
+  },
   "icons": [
     {
       "src": "https://stuff.thingsofbrand.com/docstar.io/images/imgd_docstar.png",
